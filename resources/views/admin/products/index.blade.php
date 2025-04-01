@@ -1,5 +1,7 @@
-@extends('layouts.admin')
+
+@extends('layouts.app')
 @section('content')
+
     <div>
 
         <!-- Button to add a new product -->
@@ -46,5 +48,6 @@
                 @endforeach
             </tbody>
         </table>
+        {{$products->links()}}
     </div>
 @endsection

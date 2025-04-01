@@ -1,4 +1,4 @@
-@extends('layouts.admin')
+@extends('layouts.app')
 
 @section('content')
     <div>
@@ -46,5 +46,6 @@
                 @endforeach
             </tbody>
         </table>
+        {{ $categories->links() }}
     </div>
 @endsection

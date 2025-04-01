@@ -4,6 +4,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\FrontController;
+use App\Http\Controllers\HomeController;
 
 
 /**Dashboard Routes */
@@ -30,3 +31,12 @@ Route::get('/', [FrontController::class, 'index'])->name('layouts.front.index');
 
 // Route to filter products by category
 Route::get('admin/categories/{id}', [FrontController::class, 'filterByCategory'])->name('layouts.front.category');
+Auth::routes();
+
+Route::get('/home', [App\Http\Controllers\HomeController::class, 'index'])->name('home');
+
+Route::middleware('auth')->group(function () {
+    Route::delete('/admin/products/{id}/delete', [ProductController::class, 'destroy'])->name('products.destroy');
+    Route::get('/admin/products/{id}/edit', [ProductController::class, 'edit'])->name('products.edit');
+    Route::put('/admin/products/{id}/update', [ProductController::class, 'update'])->name('products.update');
+});

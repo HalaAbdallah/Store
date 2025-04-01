@@ -4,72 +4,89 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\Category;
+use Illuminate\Support\Facades\Auth;
 
 class CategoryController extends Controller
 {
-    /**Display a listing of categories */
+    // Apply auth middleware to all methods
+    public function __construct()
+    {
+        $this->middleware('auth');
+    }
+
+    // Display all categories for authenticated user
     public function index()
     {
-        // Retrieve all categories from the database
-        $categories = Category::all();
-        // Return the categories list view with the retrieved data
+        // $categories = Category::where('user_id', Auth::id())->get();
+        $categories = Category::where('user_id', Auth::id())
+        ->latest()
+        ->paginate(3);
+
         return view('admin.categories.index', compact('categories'));
     }
 
-    /**Show the form for creating a new category. */
+    // Show category creation form
     public function create()
     {
-        // Return the category creation view
         return view('admin.categories.create');
     }
 
-    /** Store a newly created category in the database. */
+    // Store new category
     public function store(Request $request)
     {
-        // Create and save the new category
-        Category::create([
-            'name' => $request->input('name'),
+        $request->validate([
+            'name' => 'required|string|max:255',
         ]);
 
-        // Redirect back with success message
-        return redirect()->route('categories.index')->with('success', 'تم الاضافة بنجاح');
+        Category::create([
+            'name' => $request->name,
+            'user_id' => Auth::id()
+        ]);
+
+        return redirect()->route('categories.index')
+               ->with('success', 'Category added successfully');
     }
 
-    /**Show the form for editing the specified category. */
+    // Show category edit form
     public function edit($id)
     {
-        // Find the category by ID, or fail if not found
         $category = Category::findOrFail($id);
 
-        // Return the edit view with the category data
+        // Check if the user has permission to update the category
+        $this->authorize('update', $category);
+
         return view('admin.categories.edit', compact('category'));
     }
 
-    /**Update the specified category in the database.*/
+    // Update existing category
     public function update(Request $request, $id)
     {
-        // Find the category by ID
-        $category = Category::findOrFail($id);
-
-        // Update the category with new data (without validation)
-        $category->update([
-            'name' => $request->input('name'),
+        $request->validate([
+            'name' => 'required|string|max:255',
         ]);
 
-        // Redirect back with success message
-        return redirect()->route('categories.index')->with('success', 'تم التعديل بالنجاح');
-    }
-
-    /**Remove the specified category from the database.*/
-    public function destroy($id)
-    {
-        // Find the category by ID
         $category = Category::findOrFail($id);
 
-        // Delete the category
+        // Check if the user has permission to update the category
+        $this->authorize('update', $category);
+
+        $category->update(['name' => $request->name]);
+
+        return redirect()->route('categories.index')
+               ->with('success', 'Category updated successfully');
+    }
+
+    // Delete category
+    public function destroy($id)
+    {
+        $category = Category::findOrFail($id);
+
+        // Check if the user has permission to delete the category
+        $this->authorize('delete', $category);
+
         $category->delete();
 
-        // Redirect back with success message
-        return redirect()->route('categories.index')->with('success', 'تم الحذف بنجاح');
+        return redirect()->route('categories.index')
+               ->with('success', 'Category deleted successfully');
     }
 }
